@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import branca
-import streamlit_folium
-import shapely.geometry
 from branca.colormap import linear
 from streamlit_folium import st_folium
 import folium
@@ -547,12 +544,36 @@ def dun_style(feat):
         'fillOpacity': 0.7,
     }
 
-folium.GeoJson(
-    data=geojson_data,
-    style_function=dun_style,
-    tooltip=folium.GeoJsonTooltip(fields=["DUN", "KodDun"]),
-    popup=folium.GeoJsonPopup(fields=["DUN", "KodDun"])
-).add_to(np)
+def get_dun_popup(koddun):
+    if koddun in summary.index:
+        row = summary.loc[koddun]
+        winner = row['candidate']
+        winner_party = row['winner_party']
+        ph_diff = int(row['ph_diff'])
+        html = f"""
+        <b>Winner:</b> {winner} ({winner_party})<br>
+        <b>PH - Winner vote difference:</b> {ph_diff:,}
+        """
+    else:
+        html = "No data"
+    return html
+
+for feat in geojson_data['features']:
+    koddun = str(feat['properties']['KodDun']).zfill(2)
+    gjson = folium.GeoJson(
+        data=feat,
+        style_function=dun_style,
+        tooltip=folium.GeoJsonTooltip(fields=["DUN", "KodDun"]),
+    )
+    folium.Popup(get_dun_popup(koddun), max_width=350).add_to(gjson)
+    gjson.add_to(np)
+
+# folium.GeoJson(
+#     data=geojson_data,
+#     style_function=dun_style,
+#     tooltip=folium.GeoJsonTooltip(fields=["DUN", "KodDun"]),
+#     popup=folium.GeoJsonPopup(fields=["DUN", "KodDun"])
+# ).add_to(np)
 ph_color_scale.caption = "Vote Difference Between Pakatan Harapan vs Winner"
 ph_color_scale.add_to(np)
 
