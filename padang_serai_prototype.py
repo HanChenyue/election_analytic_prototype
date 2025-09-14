@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import branca
+import streamlit_folium
+import shapely.geometry
 from branca.colormap import linear
 from streamlit_folium import st_folium
 import folium
